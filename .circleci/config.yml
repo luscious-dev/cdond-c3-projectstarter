@@ -14,7 +14,7 @@ commands:
           command: |
             aws cloudformation delete-stack --stack-name udapeople-backend-<< parameters.workflow_id >>-stack
             aws cloudformation delete-stack --stack-name udapeople-frontend-<< parameters.workflow_id >>-stack
-            aws s3 rm s3://udapeople-prod-<<parameters.workflow_id>> --recursive
+            aws s3 rm arn:aws:s3:::mybucket-1974049 --recursive
 
   revert-migrations:
     description: Revert the last migration if successfully run in the current workflow.
@@ -140,7 +140,7 @@ jobs:
               --template-file .circleci/files/backend.yml \
               --tags project=udapeople \
               --stack-name "udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}-stack" \
-              --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}"  
+              --parameter-overrides ID="mybucket-1974049"  
 
       - run:
           name: Ensure front-end infrastructure exist
@@ -149,7 +149,7 @@ jobs:
               --template-file .circleci/files/frontend.yml \
               --tags project=udapeople \
               --stack-name "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}-stack" \
-              --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}"  
+              --parameter-overrides ID="mybucket-1974049"  
           
       - run:
           name: Add back-end ip to ansible inventory
@@ -164,7 +164,7 @@ jobs:
             )
             echo "http://$BACKEND_IP:3030" >> .circleci/back_url.txt
             echo "$BACKEND_IP" >> .circleci/ansible/inventory.txt
-
+      - run: yum -y install tar gzip
       - persist_to_workspace:
           root: ~/
           paths:
