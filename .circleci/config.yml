@@ -14,7 +14,7 @@ commands:
           command: |
             aws cloudformation delete-stack --stack-name udapeople-backend-<< parameters.workflow_id >>-stack
             aws cloudformation delete-stack --stack-name udapeople-frontend-<< parameters.workflow_id >>-stack
-            aws s3 rm arn:aws:s3:::mybucket-1974049 --recursive
+            aws s3 rm http(s)://mybucket-1974049.s3.amazonaws.com --recursive
 
   revert-migrations:
     description: Revert the last migration if successfully run in the current workflow.
@@ -181,6 +181,7 @@ jobs:
       - checkout
       - add_ssh_keys:
           fingerprints: ["0d:eb:e0:cf:5f:70:c2:ec:22:54:e8:1c:a1:84:0c:6c"]
+      - run: yum -y install tar gzip
       - attach_workspace:
           at: ~/
       - run:
