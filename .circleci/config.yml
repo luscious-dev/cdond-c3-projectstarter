@@ -183,10 +183,11 @@ jobs:
       - add_ssh_keys:
           fingerprints: ["0d:eb:e0:cf:5f:70:c2:ec:22:54:e8:1c:a1:84:0c:6c"]
       - run: 
-          name: Something
+          name: Setup tar and aws-cli
           command: |
             apk add sudo
             sudo apk add tar gzip
+            sudo apk add --no-cache aws-cli
       - attach_workspace:
           at: ~/
       - run:
@@ -196,7 +197,7 @@ jobs:
       - run:
           name: Configure server
           command: |
-            ansible-playbook .circleci/configure-server.yml -i ~/project/.circleci/ansible/inventory.txt
+            ansible-playbook .circleci/ansible/configure-server.yml -i ~/project/.circleci/ansible/inventory.txt
       # Here's where you will add some code to rollback on failure   
       - destroy-environment:
           workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}  
