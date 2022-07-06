@@ -177,7 +177,7 @@ jobs:
 
   configure-infrastructure:
     docker:
-      - image: python:3.7-alpine3.11
+      - image: python:3.10.5
     steps:
       - checkout
       - add_ssh_keys:
@@ -185,15 +185,13 @@ jobs:
       - run: 
           name: Setup tar and aws-cli
           command: |
-            apk add sudo
-            sudo apk add tar gzip
-            apk add --no-cache aws-cli
+            sudo apt-get install awscli -y
       - attach_workspace:
           at: ~/
       - run:
           name: Install dependencies
           command: |
-            apk add --update ansible
+            sudo apt install ansible
       - run:
           name: Configure server
           command: |
