@@ -187,7 +187,7 @@ jobs:
           command: |
             apk add sudo
             sudo apk add tar gzip
-            sudo apk add aws-cli
+            apk add --no-cache aws-cli
       - attach_workspace:
           at: ~/
       - run:
