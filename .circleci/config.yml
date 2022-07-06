@@ -185,7 +185,7 @@ jobs:
       - run: 
           name: Setup tar and aws-cli
           command: |
-            apt-get install sudo
+            sudo apt-get update
             sudo apt-get install awscli -y
       - attach_workspace:
           at: ~/
