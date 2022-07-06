@@ -188,8 +188,8 @@ jobs:
       - run:
           name: Install dependencies
           command: |
-            yum -y update
-            yum -y install ansible
+            sudo yum install epel-release
+            sudo yum install ansible
       - run:
           name: Configure server
           command: |
@@ -214,7 +214,7 @@ jobs:
           # Memstash does not seem to be available. So i'll use kvdb instead
           command: |
             cd backend
-            if grep -q "has been executed successfully." migration_output.txt
+            if grep -q "has been executed successfully." migration_result.txt
             then
             curl https://kvdb.io/QT1vNS2DU9WjHfk9D92e6Y/migration_$\{CIRCLE_WORKFLOW_ID:0:7\}  -d '1'
             fi
@@ -237,10 +237,6 @@ jobs:
       - attach_workspace:
           at: ~/
       
-      # - run:
-      #     name: Install dependencies
-      #     command: |
-      #       apk add --update curl tar
       - run:
           name: Get backend url
           command: |
