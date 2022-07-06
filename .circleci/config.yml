@@ -187,9 +187,9 @@ jobs:
           at: ~/
       - run:
           name: Install dependencies
-          # apk add --update ansible
           command: |
-            apk add --update ansible
+            sudo yum -y update
+            sudo yum -y install ansible
       - run:
           name: Configure server
           command: |
