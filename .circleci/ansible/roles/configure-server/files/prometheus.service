@@ -1,0 +1,20 @@
+# cat /etc/systemd/system/prometheus.service
+[Unit]
+Description=Prometheus
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+#User=prometheus
+#Group=prometheus
+User=root
+Restart=on-failure
+Type=simple
+ExecStart=/etc/prometheus/prometheus \
+    --config.file /etc/prometheus/prometheus.yml \
+    --storage.tsdb.path /etc/prometheus/ \
+    --web.console.templates=/etc/prometheus/consoles \
+    --web.console.libraries=/etc/prometheus/console_libraries
+
+[Install]
+WantedBy=multi-user.target

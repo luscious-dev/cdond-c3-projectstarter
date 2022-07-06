@@ -1,0 +1,75 @@
+---
+- name: update environment
+  become: yes
+  apt:
+    update_cache: yes
+
+- name: install package
+  become: yes
+  apt:
+    name: nginx
+    state: latest
+
+- name: create prometheus user
+  shell: |
+    sudo useradd --no-create-home --shell /bin/false prome
+    sudo mkdir /etc/prometheus
+    sudo mkdir /var/lib/prometheus
+    chown prome:prome /var/lib/prometheus
+
+- name: download prometheus and send to destination
+  get_url:
+    url: https://github.com/prometheus/prometheus/releases/download/v2.3.2/prometheus-2.3.2.linux-amd64.tar.gz
+    dest: /home/ubuntu/prometheus-2.3.2.linux-amd64.tar.gz
+
+- name: unzip downloaded file
+  unarchive:
+    src: /home/ubuntu/prometheus-2.3.2.linux-amd64.tar.gz
+    dest: /home/ubuntu/
+    remote_src: True
+
+- name: move prometheus
+  shell: |
+    rm -rf prometheus-files
+    mv /home/ubuntu/prometheus-2.3.2.linux-amd64 prometheus-files
+
+- name: Move file
+  shell: |
+    cp prometheus-files/prometheus /usr/local/bin/
+    cp prometheus-files/promtool /usr/local/bin/
+    chown prome:prome /usr/local/bin/prometheus
+    chown prome:prome /usr/local/bin/promtool
+    cp -r prometheus-files/consoles /etc/prometheus
+    cp -r prometheus-files/console_libraries /etc/prometheus
+    chown -R prome:prome /etc/prometheus/consoles/prometheus
+    chown -R prome:prome /etc/prometheus/console_libraries
+
+- name: Prepare database directory
+  shell: |
+    mkdir /opt/prometheus-setup/
+    chown -R prome:prome /opt/prometheus-setup/
+
+- name: Copy Prometheus.yml
+  become: true
+  copy:
+    src: prometheus.yml
+    dest: /etc/prometheus/
+    
+# It failed over here because I didn't have access to the promrtheus.service and prometheus.yml files
+- name: Copy prometheus.service
+  become: true
+  copy:
+    src: prometheus.service
+    dest: /etc/systemd/system/
+
+
+- name: Change ownership of service and config files
+  shell: |
+    chown prome:prome /etc/prometheus/prometheus.yml
+    chown prome:prome /etc/systemd/system/prometheus.service
+
+- name: Reload prometheus to register changes
+  shell: |
+    systemctl daemon-reload
+    systemctl start prometheus
+    systemctl status prometheus

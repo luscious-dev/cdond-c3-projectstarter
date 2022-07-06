@@ -24,16 +24,17 @@ commands:
       - run:
           name: Revert migrations
           # Add when this will run
+          when: on_fail
           command: |
             # Curl command here to see if there was a successful migration associated with the workflow id, store result in SUCCESS variable
-            SUCCESS = 1
+            SUCCESS = $(curl --insecure  https://kvdb.io/QT1vNS2DU9WjHfk9D92e6Y/migration_$\{CIRCLE_WORKFLOW_ID:0:7\})
             if(( $SUCCESS==1 )); 
             then
-            #  cd ~/project/backend
-            #  npm install
-            #  Add revert code here. You can find this in the Getting Started section.
-              exit 1
+            cd ~/project/backend
+            npm install
+            npm run migration:revert
             fi
+
             
 jobs:
   build-frontend:
@@ -154,13 +155,19 @@ jobs:
           command: |
             touch inventory.txt
             echo [web] > inventory.txt
+            BACKEND_IP=$( \
             aws ec2 describe-instances \
             --query 'Reservations[*].Instances[*].PublicIpAddress' \
             --filters "Name=tag:Project,Values=udacity" \
-            --output text >> inventory.txt
+            --output text \
+            )
+            echo "http://$BACKEND_IP:3030" >> .circleci/back_url.txt
+            echo "$BACKEND_IP" >> .circleci/ansible/inventory.txt
+
       - persist_to_workspace:
           root: ~/
           paths:
+            - project/.circleci/backend_url.txt
             - project/.circleci/ansible/inventory.txt
       # Here's where you will add some code to rollback on failure   
       - destroy-environment:
@@ -198,22 +205,35 @@ jobs:
           command: |
             cd backend
             npm install
-            npm run migrations
+            npm run migrations >> migration_result.txt
       - run:
           name: Send migration results to memstash
+          # Memstash does not seem to be available. So i'll use kvdb instead
           command: |
-            # Your code here
-            exit 1
+            cd backend
+            if grep -q "has been executed successfully." migration_output.txt
+            then
+            curl https://kvdb.io/QT1vNS2DU9WjHfk9D92e6Y/migration_$\{CIRCLE_WORKFLOW_ID:0:7\}  -d '1'
+            fi
+      - persist_to_workspace:
+          root: ~/
+          paths:
+            - project/.circleci/
      # Here's where you will add some code to rollback on failure
-      - destroy-environment:
-            workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}        
+      - destroy_environment:
+          workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
+      - revert-migrations        
 
   deploy-frontend:
     docker:
       - image: amazon/aws-cli
+    
     steps:
       # Checkout code from git
       - checkout
+      - attach_workspace:
+          at: ~/
+      
       - run:
           name: Install dependencies
           command: |
@@ -221,16 +241,29 @@ jobs:
       - run:
           name: Get backend url
           command: |
-            export API_URL="http://${BACKEND_IP}:3030"
-            echo "${API_URL}"
+            echo project/.circleci/backend_url.txt
+            
       - run:
           name: Deploy frontend objects
           command: |
             # your code here
             aws s3 sync frontend s3://mybucket-${CIRCLE_WORKFLOW_ID:0:7} --delete
+
+      - run:
+          name: Create API_URL
+          command: |
+            export API_URL=$(echo project/.circleci/backend_url.txt)
+            npm run build
+      - run:
+          name: Build frontend app
+          command: |
+            cd frontend
+            npm run build
+            aws s3 cp ./dist s3://dist
       # Here's where you will add some code to rollback on failure
-      - destroy-environment:
-          workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}       
+      - destroy_environment:
+          workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
+      - revert-migrations       
                     
   deploy-backend:
     docker:
@@ -238,17 +271,31 @@ jobs:
       - image: cimg/node:14.18
     steps:
       # Checkout code from git
+      - checkout
       # Add ssh keys with fingerprint
+      - add_ssh_keys:
+          fingerprints: ["0d:eb:e0:cf:5f:70:c2:ec:22:54:e8:1c:a1:84:0c:6c"]
       # attach workspace
+      - attach_workspace:
+          at: ~/
       - run:
           name: Install dependencies
           command: |
-            # your code here
+            pip install --user ansible
       - run:
           name: Deploy backend
           command: |
-            # your code here
-      # Here's where you will add some code to rollback on failure  
+            ansible-playbook .circleci/deploy-backend.yml -i ~/project/.circleci/ansible/inventory.txt
+      - run:
+          name: Build file
+          command: |
+            cd backend
+            npm run build
+
+      # Here's where you will add some code to rollback on failure
+      - destroy_environment:
+          workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
+      - revert-migrations 
 
   smoke-test:
     docker:
@@ -260,19 +307,28 @@ jobs:
           name: Install dependencies
           command: |
             apk add --update curl
-      - run:
-          name: Get backend url
-          command: |
-            # your code here
+      # - run:
+      #     name: Get backend url
+      #     command: |
+      #       API_URL=$(echo .circleci/backend_url.txt)
       - run:
           name: Backend smoke test.
           command: |
-            # your code here
+            curl -s $API_URL/api/status
       - run:
           name: Frontend smoke test.
           command: |
-            # your code here
+            URL="http://udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}-stack.s3-website-us-east-1.amazonaws.com"
+            if curl -s ${URL} | grep "Welcome"
+            then
+              return 1
+            else
+              return 0
+            fi
       # Here's where you will add some code to rollback on failure  
+      - destroy_environment:
+          workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
+      - revert-migrations
 
   cloudfront-update:
     docker:
