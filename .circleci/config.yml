@@ -176,12 +176,12 @@ jobs:
 
   configure-infrastructure:
     docker:
-      - image: python:3.7-alpine3.11
+      - image: amazon/aws-cli
     steps:
       - checkout
       - add_ssh_keys:
           fingerprints: ["0d:eb:e0:cf:5f:70:c2:ec:22:54:e8:1c:a1:84:0c:6c"]
-      - run: yum -y install tar gzip
+      # - run: yum -y install tar gzip
       - attach_workspace:
           at: ~/
       - run:
