@@ -182,7 +182,11 @@ jobs:
       - checkout
       - add_ssh_keys:
           fingerprints: ["0d:eb:e0:cf:5f:70:c2:ec:22:54:e8:1c:a1:84:0c:6c"]
-      - run: su root apk add tar gzip
+      - run: 
+          name: Something
+          command: |
+            apk add sudo
+            sudo apk add tar gzip
       - attach_workspace:
           at: ~/
       - run:
