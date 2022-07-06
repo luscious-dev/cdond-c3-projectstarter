@@ -17,8 +17,7 @@ commands:
             
 
   revert-migrations:
-    description: Revert the last migration if successfully run in the current workflow.
-       
+    description: Revert the last migration if successfully run in the current workflow.   
     steps:
       - run:
           name: Revert migrations
@@ -221,8 +220,8 @@ jobs:
           paths:
             - project/.circleci/
      # Here's where you will add some code to rollback on failure
-      - destroy_environment:
-          workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
+      - destroy-environment:
+          workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
       - revert-migrations        
 
   deploy-frontend:
