@@ -200,6 +200,9 @@ jobs:
       - image: circleci/node:13.8.0
     steps:
       # Checkout code from git
+      - checkout
+      - attach_workspace:
+          at: ~/
       - run:
           name: Run migrations
           command: |
