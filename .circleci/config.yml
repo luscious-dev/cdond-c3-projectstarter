@@ -257,8 +257,8 @@ jobs:
             npm run build
             aws s3 cp ./dist s3://dist
       # Here's where you will add some code to rollback on failure
-      - destroy_environment:
-          workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
+      - destroy-environment:
+          workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
       - revert-migrations       
                     
   deploy-backend:
@@ -289,7 +289,7 @@ jobs:
             npm run build
 
       # Here's where you will add some code to rollback on failure
-      - destroy_environment:
+      - destroy-environment:
           workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
       - revert-migrations 
 
@@ -322,7 +322,7 @@ jobs:
               return 0
             fi
       # Here's where you will add some code to rollback on failure  
-      - destroy_environment:
+      - destroy-environment:
           workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
       - revert-migrations
 
