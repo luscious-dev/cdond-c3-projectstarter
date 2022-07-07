@@ -26,7 +26,7 @@ commands:
           command: |
             # Curl command here to see if there was a successful migration associated with the workflow id, store result in SUCCESS variable
             SUCCESS=$(curl --insecure  https://kvdb.io/QT1vNS2DU9WjHfk9D92e6Y/migration_$\{CIRCLE_WORKFLOW_ID:0:7\})
-            if(( $SUCCESS==1 )); 
+            if($SUCCESS==1); 
             then
             cd ~/project/backend
             npm install
@@ -226,11 +226,18 @@ jobs:
             - project/.circleci/
      # Here's where you will add some code to rollback on failure
       - run:
+          name: Install Python
+          command: sudo apt install python3.8
+      - run: 
           name: Install aws cli
-          command: |
-            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-            unzip awscliv2.zip
-            sudo ./aws/install
+          command: pip install awscli --force-reinstall --upgrade
+
+      # - run:
+      #     name: Install aws cli
+      #     command: |
+      #       curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+      #       unzip awscliv2.zip
+      #       sudo ./aws/install
       - destroy-environment:
           workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
       - revert-migrations        
