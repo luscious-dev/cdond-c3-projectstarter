@@ -245,16 +245,6 @@ jobs:
           at: ~/
 
       - run:
-          name: Install Python
-          command: |
-            sudo apt update
-            sudo apt install python3.9
-            sudo apt install python3-pip
-      - run: 
-          name: Install aws cli
-          command: sudo pip3 install awscli --force-reinstall --upgrade
-      
-      - run:
           name: Get backend url
           command: |
             echo project/.circleci/output/backend_url.txt
