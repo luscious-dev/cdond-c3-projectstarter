@@ -77,7 +77,7 @@ jobs:
       - checkout
       - restore_cache:
           keys: [frontend-build]
-     - run:
+      - run:
           name: Change directory to frontend
           command: |
             cd frontend
