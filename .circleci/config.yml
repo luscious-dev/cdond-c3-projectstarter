@@ -259,7 +259,7 @@ jobs:
           name: Create API_URL
           command: |
             export API_URL='cat project/.circleci/output/backend_url.txt'
-            npm run build
+            
       - run:
           name: Build frontend app
           command: |
