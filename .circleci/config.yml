@@ -39,8 +39,6 @@ jobs:
       - image: circleci/node:13.8.0
     steps:
       - checkout
-      - restore_cache:
-          keys: [frontend-build]
       - run:
           name: Build front-end
           command: |
@@ -48,26 +46,26 @@ jobs:
             npm install
             npm run build
             
-      - save_cache:
-          paths: [frontend/node_modules]
-          key: frontend-build
+      - persist_to_workspace:
+          root: ~/
+          paths:
+            - project/frontend/node_modules
 
   build-backend:
     docker:
       - image: circleci/node:13.8.0
     steps:
       - checkout
-      - restore_cache:
-          keys: [backend-build]
       - run:
           name: Back-end build
           command: |
             cd backend
             npm install
             npm run build
-      - save_cache:
-          paths: [backend/node_modules]
-          key: backend-build
+      - persist_to_workspace:
+          root: ~/
+          paths:
+            - project/backend/node_modules
 
   test-frontend:
     docker:
@@ -204,6 +202,12 @@ jobs:
       - attach_workspace:
           at: ~/
       - run:
+          name: Install Python
+          command: sudo apt install python3.8
+      - run: 
+          name: Install aws cli
+          command: pip install awscli --force-reinstall --upgrade
+      - run:
           name: Run migrations
           command: |
             cd backend
@@ -222,14 +226,9 @@ jobs:
       - persist_to_workspace:
           root: ~/
           paths:
-            - project/.circleci/
+            - project/.circleci/tmp
      # Here's where you will add some code to rollback on failure
-      - run:
-          name: Install Python
-          command: sudo apt install python3.8
-      - run: 
-          name: Install aws cli
-          command: pip install awscli --force-reinstall --upgrade
+      
 
       # - run:
       #     name: Install aws cli
@@ -254,7 +253,7 @@ jobs:
       - run:
           name: Get backend url
           command: |
-            echo project/.circleci/backend_url.txt
+            echo project/.circleci/tmp/backend_url.txt
             
       - run:
           name: Deploy frontend objects
@@ -265,7 +264,7 @@ jobs:
       - run:
           name: Create API_URL
           command: |
-            export API_URL=$(echo project/.circleci/backend_url.txt)
+            export API_URL='cat project/.circleci/tmp/backend_url.txt'
             npm run build
       - run:
           name: Build frontend app
