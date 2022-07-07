@@ -77,12 +77,12 @@ jobs:
       - checkout
       - restore_cache:
           keys: [frontend-build]
-      - run:
-          name: Test frontend
+     - run:
+          name: Change directory to frontend
           command: |
             cd frontend
-            npm install
-            npm audit fix --audit-level=critical
+      - run: npm install
+      - run: npm run test
                 
   test-backend:
     docker:
@@ -92,10 +92,11 @@ jobs:
       - restore_cache:
           keys: [backend-build]
       - run:
-          name: Test backend
+          name: Change directory to backend
           command: |
             cd backend
-            npm install
+      - run: npm install
+      - run: npm run test
             
             
   scan-frontend:
