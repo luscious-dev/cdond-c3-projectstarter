@@ -214,6 +214,7 @@ jobs:
           name: Run migrations
           command: |
             cd backend
+            npm install redis
             npm run migrations >> migration_result.txt
             cat migration_result.txt
             
