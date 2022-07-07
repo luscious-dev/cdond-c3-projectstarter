@@ -24,12 +24,19 @@ commands:
           # Add when this will run
           when: on_fail
           command: |
-            SUCCESS=$(curl --insecure  https://kvdb.io/QT1vNS2DU9WjHfk9D92e6Y/migration_$\{CIRCLE_WORKFLOW_ID:0:7\})
-            if($SUCCESS==1); 
-            then
             cd ~/project/backend
-            npm install
-            npm run migration:revert
+            SUCCESS=$(curl --insecure  https://kvdb.io/QT1vNS2DU9WjHfk9D92e6Y/migration_$\{CIRCLE_WORKFLOW_ID:0:7\})
+            if[[$SUCCESS==1]]; 
+            then
+              npm install
+              npm run migration:revert
+            fi
+          
+          command: |
+            cd ~/project/backend
+            if [[ -f "~/project/.circleci/outputs/db_migration_success" ]]; then
+              npm i
+              npm run migration:revert
             fi
 
             
@@ -206,6 +213,7 @@ jobs:
           command: |
             sudo apt update
             sudo apt install python3.9
+            sudo apt install python3-pip
       - run: 
           name: Install aws cli
           command: sudo pip3 install awscli --force-reinstall --upgrade
