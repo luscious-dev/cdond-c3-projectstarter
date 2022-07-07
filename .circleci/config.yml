@@ -213,24 +213,24 @@ jobs:
       - run:
           name: Run migrations
           command: |
-            cd project/backend/
+            cd backend
             npm install
-            npm run migrations > migration_result.txt
-            cat migration_result.txt
+            npm run migrations >> .circle/output/migration_result.txt
+            cat .circle/output/migration_result.txt
             
       - run:
           name: Send migration results to memstash
           # Memstash does not seem to be available. So i'll use kvdb instead
           command: |
             cd backend
-            if grep -q "has been executed successfully." migration_result.txt
+            if grep -q "has been executed successfully." .circle/output/migration_result.txt
             then
             curl https://kvdb.io/QT1vNS2DU9WjHfk9D92e6Y/migration_$\{CIRCLE_WORKFLOW_ID:0:7\}  -d '1'
             fi
       - persist_to_workspace:
           root: ~/
           paths:
-            - project/.circleci/tmp/
+            - project/.circleci/output/migration_result.txt
       - destroy-environment:
           workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
 
