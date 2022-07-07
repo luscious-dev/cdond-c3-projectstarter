@@ -159,14 +159,14 @@ jobs:
             --filters "Name=tag:Project,Values=udacity" \
             --output text \
             )
-            echo "http://$BACKEND_IP:3030" >> .circleci/back_url.txt
+            echo "http://$BACKEND_IP:3030" >> .circleci/tmp/back_url.txt
             echo "$BACKEND_IP" >> .circleci/ansible/inventory.txt
       - run: yum -y install tar gzip
       - persist_to_workspace:
           root: ~/
           paths:
-            - project/.circleci/backend_url.txt
-            - project/.circleci/ansible/inventory.txt
+            - project/.circleci/tmp/
+            - project/.circleci/ansible/
       # Here's where you will add some code to rollback on failure   
       - destroy-environment:
           workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}   
@@ -213,8 +213,7 @@ jobs:
       - run:
           name: Run migrations
           command: |
-            cd backend
-            npm install
+            cd project/backend/
             npm run migrations > migration_result.txt
             cat migration_result.txt
             
