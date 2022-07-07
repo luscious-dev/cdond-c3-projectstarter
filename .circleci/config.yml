@@ -247,7 +247,7 @@ jobs:
       - run:
           name: Set up node and npm
           command: |
-            sudo yum install nodejs npm
+            yum install nodejs npm
 
 
       - run:
