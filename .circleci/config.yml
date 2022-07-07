@@ -208,7 +208,7 @@ jobs:
             sudo apt install python3.9
       - run: 
           name: Install aws cli
-          command: pip install awscli --force-reinstall --upgrade
+          command: pip3 install awscli --force-reinstall --upgrade
       - run:
           name: Run migrations
           command: |
