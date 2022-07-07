@@ -25,7 +25,7 @@ commands:
           when: on_fail
           command: |
             # Curl command here to see if there was a successful migration associated with the workflow id, store result in SUCCESS variable
-            SUCCESS = $(curl --insecure  https://kvdb.io/QT1vNS2DU9WjHfk9D92e6Y/migration_$\{CIRCLE_WORKFLOW_ID:0:7\})
+            SUCCESS=$(curl --insecure  https://kvdb.io/QT1vNS2DU9WjHfk9D92e6Y/migration_$\{CIRCLE_WORKFLOW_ID:0:7\})
             if(( $SUCCESS==1 )); 
             then
             cd ~/project/backend
@@ -78,7 +78,7 @@ jobs:
       - restore_cache:
           keys: [frontend-build]
       - run:
-          name: Change directory to frontend
+          name: Test frontend
           command: |
             cd frontend
             npm install
@@ -92,7 +92,7 @@ jobs:
       - restore_cache:
           keys: [backend-build]
       - run:
-          name: Change directory to backend
+          name: Test Backend
           command: |
             cd backend
             npm install
@@ -225,6 +225,12 @@ jobs:
           paths:
             - project/.circleci/
      # Here's where you will add some code to rollback on failure
+      - run:
+          name: Install aws cli
+          command: |
+            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+            unzip awscliv2.zip
+            sudo ./aws/install
       - destroy-environment:
           workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
       - revert-migrations        
