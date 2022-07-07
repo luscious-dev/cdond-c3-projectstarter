@@ -242,11 +242,21 @@ jobs:
       - checkout
       - attach_workspace:
           at: ~/
+
+      - run:
+          name: Install Python
+          command: |
+            sudo apt update
+            sudo apt install python3.9
+            sudo apt install python3-pip
+      - run: 
+          name: Install aws cli
+          command: sudo pip3 install awscli --force-reinstall --upgrade
       
       - run:
           name: Get backend url
           command: |
-            echo project/.circleci/tmp/backend_url.txt
+            echo project/.circleci/output/backend_url.txt
             
       - run:
           name: Deploy frontend objects
@@ -257,7 +267,7 @@ jobs:
       - run:
           name: Create API_URL
           command: |
-            export API_URL='cat project/.circleci/tmp/backend_url.txt'
+            export API_URL='cat project/.circleci/output/backend_url.txt'
             npm run build
       - run:
           name: Build frontend app
@@ -284,13 +294,22 @@ jobs:
       - attach_workspace:
           at: ~/
       - run:
+          name: Install Python
+          command: |
+            sudo apt update
+            sudo apt install python3.9
+            sudo apt install python3-pip
+      - run: 
+          name: Install aws cli
+          command: sudo pip3 install awscli --force-reinstall --upgrade
+      - run:
           name: Install dependencies
           command: |
             pip install --user ansible
       - run:
           name: Deploy backend
           command: |
-            ansible-playbook .circleci/deploy-backend.yml -i ~/project/.circleci/ansible/inventory.txt
+            ansible-playbook .circleci/ansible/deploy-backend.yml -i ~/project/.circleci/ansible/inventory.txt
       - run:
           name: Build file
           command: |
