@@ -31,13 +31,6 @@ commands:
               npm install
               npm run migration:revert
             fi
-          
-          command: |
-            cd ~/project/backend
-            if [[ -f "~/project/.circleci/outputs/db_migration_success" ]]; then
-              npm i
-              npm run migration:revert
-            fi
 
             
 jobs:
