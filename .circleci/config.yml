@@ -81,8 +81,8 @@ jobs:
           name: Change directory to frontend
           command: |
             cd frontend
-      - run: npm install
-      - run: npm run test
+            npm install
+            npm run test
                 
   test-backend:
     docker:
@@ -97,8 +97,8 @@ jobs:
           name: Change directory to backend
           command: |
             cd backend
-      - run: npm install
-      - run: npm run test
+            npm install
+            npm run test
             
             
   scan-frontend:
