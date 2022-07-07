@@ -245,6 +245,12 @@ jobs:
           at: ~/
 
       - run:
+          name: Set up node and npm
+          command: |
+            sudo yum install nodejs npm
+
+
+      - run:
           name: Get backend url
           command: |
             echo project/.circleci/output/backend_url.txt
@@ -252,7 +258,6 @@ jobs:
       - run:
           name: Deploy frontend objects
           command: |
-            # your code here
             aws s3 sync frontend s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --delete
 
       - run:
