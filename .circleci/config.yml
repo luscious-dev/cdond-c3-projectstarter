@@ -205,7 +205,7 @@ jobs:
           name: Install Python
           command: |
             sudo apt update
-            sudo apt install python3
+            sudo apt install python3.9
       - run: 
           name: Install aws cli
           command: pip install awscli --force-reinstall --upgrade
