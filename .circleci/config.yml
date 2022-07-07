@@ -203,7 +203,9 @@ jobs:
           at: ~/
       - run:
           name: Install Python
-          command: sudo apt install python3.8
+          command: |
+            sudo apt update
+            sudo apt install python3
       - run: 
           name: Install aws cli
           command: pip install awscli --force-reinstall --upgrade
