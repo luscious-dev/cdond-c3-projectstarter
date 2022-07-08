@@ -239,6 +239,9 @@ jobs:
     steps:
       # Checkout code from git
       - checkout
+      - run: 
+          name: Install aws cli
+          command: sudo pip3 install awscli --force-reinstall --upgrade
       - attach_workspace:
           at: ~/
       - run:
@@ -247,11 +250,6 @@ jobs:
             sudo apt update
             sudo apt install python3.9
             sudo apt install python3-pip
-      - run: 
-          name: Install aws cli
-          command: sudo pip3 install awscli --force-reinstall --upgrade
-
-
       - run:
           name: Get backend url
           command: |
@@ -260,22 +258,12 @@ jobs:
             echo API_URL="http://${BACKEND_IP}:3030" >> frontend/.env
             cat frontend/.env
             
-      # - run:
-      #     name: Deploy frontend objects
-      #     command: |
-      #       aws s3 sync frontend s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --delete
-
-      # - run:
-      #     name: Create API_URL
-      #     command: |
-      #       export API_URL='cat project/.circleci/output/backend_url.txt'
-            
+      
       - run:
           name: Deploy frontend objects
           command: |
             cd frontend
             npm install
-            npm install caniuse-lite@latest --save
             npm run build
             tar -czvf artifact-"${CIRCLE_WORKFLOW_ID:0:7}".tar.gz dist
             aws s3 cp dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive
