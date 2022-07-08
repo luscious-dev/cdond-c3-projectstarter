@@ -235,20 +235,21 @@ jobs:
 
   deploy-frontend:
     docker:
-      - image: amazon/aws-cli
-    
+      - image: circleci/node:latest
     steps:
       # Checkout code from git
       - checkout
-      - run: yum -y install tar gzip
       - attach_workspace:
           at: ~/
-
       - run:
-          name: Set up node and npm
+          name: Install Python
           command: |
-            yum -y install sudo
-            sudo yum install nodejs npm --enablerepo=epel
+            sudo apt update
+            sudo apt install python3.9
+            sudo apt install python3-pip
+      - run: 
+          name: Install aws cli
+          command: sudo pip3 install awscli --force-reinstall --upgrade
 
 
       - run:
