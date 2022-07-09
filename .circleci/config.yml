@@ -183,7 +183,7 @@ jobs:
           at: ~/
       - run: 
           name: Install aws cli
-          command: sudo pip3 install awscli --force-reinstall --upgrade
+          command: pip3 install awscli --force-reinstall --upgrade
       - run:
           name: Install dependencies
           command: |
