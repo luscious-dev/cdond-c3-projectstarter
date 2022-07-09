@@ -1,5 +1,8 @@
 version: 2.1
 
+orbs: 
+  slack: circleci/slack@4.10.1
+
 commands:
   destroy-environment:
     description: Destroy back-end and front-end cloudformation stacks given a workflow ID.
@@ -46,10 +49,10 @@ jobs:
             npm install
             npm run build
             
-      - persist_to_workspace:
-          root: ~/
-          paths:
-            - project/frontend/node_modules
+      # - persist_to_workspace:
+      #     root: ~/
+      #     paths:
+      #       - project/frontend/node_modules
 
   build-backend:
     docker:
@@ -62,10 +65,10 @@ jobs:
             cd backend
             npm install
             npm run build
-      - persist_to_workspace:
-          root: ~/
-          paths:
-            - project/backend/node_modules
+      # - persist_to_workspace:
+      #     root: ~/
+      #     paths:
+      #       - project/backend/node_modules
 
   test-frontend:
     docker:
@@ -191,7 +194,8 @@ jobs:
       - run:
           name: Configure server
           command: |
-            ansible-playbook .circleci/ansible/configure-server.yml -i ~/project/.circleci/ansible/inventory.txt
+            cd .circleci/ansible
+            ansible-playbook configure-server.yml -i ~/project/.circleci/ansible/inventory.txt
       # Here's where you will add some code to rollback on failure   
       - destroy-environment:
           workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}  
