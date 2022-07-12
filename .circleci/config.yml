@@ -314,14 +314,16 @@ jobs:
       # attach workspace
       - attach_workspace:
           at: ~/tmp
-      
-      - run: 
-          name: Install aws cli
-          command: sudo pip3 install awscli --force-reinstall --upgrade
+    
       - run:
           name: Install dependencies
           command: |
-            pip install --user ansible
+            apk add --update ansible
+            apk add --update openssh-server
+            apk add --no-cache tar gzip curl
+            apk add --update nodejs npm
+            apk --no-cache add --virtual builds-deps build-base python3
+            pip install --upgrade pip && pip install --upgrade awscli
       - run:
           name: Deploy backend
           command: |
