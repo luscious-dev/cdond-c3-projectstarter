@@ -212,6 +212,8 @@ jobs:
     steps:
       # Checkout code from git
       - checkout
+      - restore_cache:
+          keys: [backend-build]
       - attach_workspace:
           at: ~/
       - run:
@@ -254,7 +256,7 @@ jobs:
       - checkout
       
       - attach_workspace:
-          at: ~/
+          at: ~/tmp
       - run:
           name: Install Python
           command: |
@@ -267,6 +269,9 @@ jobs:
       - run:
           name: Get backend url
           command: |
+            export BACKEND_IP=$(aws ec2 describe-instances --query 'Reservations[*].Instances[*].PublicIpAddress' \
+              --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
+              --output text)
             export API_URL="http://${BACKEND_IP}:3030"
             echo "API_URL = ${API_URL}"
             echo API_URL="http://${BACKEND_IP}:3030" >> frontend/.env
@@ -299,7 +304,7 @@ jobs:
           fingerprints: ["a3:43:7a:d7:33:ce:cd:68:d8:e6:16:8d:9e:65:e8:ea"]
       # attach workspace
       - attach_workspace:
-          at: ~/
+          at: ~/tmp
       - run:
           name: Install Python
           command: |
@@ -316,7 +321,7 @@ jobs:
       - run:
           name: Deploy backend
           command: |
-            ansible-playbook .circleci/ansible/deploy-backend.yml -i ~/project/.circleci/ansible/inventory.txt
+            ansible-playbook .circleci/ansible/deploy-backend.yml -i ~/tmp/project/.circleci/ansible/inventory.txt
       - run:
           name: Build file
           command: |
