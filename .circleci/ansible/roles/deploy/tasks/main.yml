@@ -1,7 +1,7 @@
 ---
 - name: "Creates backend app directory"
   file:
-    path: ~/backend_app
+    path: $HOME/backend_app
     state: directory
 
 - name: "Copy compiled backend app"
@@ -32,3 +32,36 @@
 - name: "Configure pm2 to start as service"
   shell: |
     env PATH=$PATH:/usr/local/bin pm2 startup -u ubuntu
+
+
+- name: Create app directory
+  file:
+    path: $HOME/backend_app
+    state: directory
+
+- name: "Copy files to server"
+  ansible.builtin.copy:
+    src: "files/backend.tar.gz"
+    dest: "$HOME/backend.tar.gz"
+    follow: yes
+
+- name: "install dependencies."
+  become: true
+  apt:
+    name:
+      - nodejs
+      - npm
+    state: latest
+    update_cache: yes
+
+- name: "Install Dependencies"
+  become: true
+  shell: |
+    tar -xvf backend.tar.gz .
+    rm backend.tar.gz
+    npm install
+- name: "Start Server"
+  become: true
+  shell: |
+    sudo pm2 stop default
+    sudo pm2 start npm -- run start
