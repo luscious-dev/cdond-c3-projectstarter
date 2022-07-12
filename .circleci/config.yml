@@ -250,22 +250,33 @@ jobs:
 
   deploy-frontend:
     docker:
-      - image: circleci/node:latest
+      - image: amazon/aws-cli
     steps:
-      # Checkout code from git
       - checkout
-      
+      - run:
+          name: Install sudo, tar, gzip, curl
+          command: |
+            yum install sudo -y
+            yum -y install tar gzip
+            yum makecache
+            yum install curl.x86_64
+      - run:
+          name: Install Nodejs and NPM
+          command: |
+            yum install -y gcc-c++ make
+            curl -sL https://rpm.nodesource.com/setup_13.x |sudo -E bash -
+            sudo yum install -y nodejs
       - attach_workspace:
           at: ~/tmp
-      - run:
-          name: Install Python
-          command: |
-            sudo apt update
-            sudo apt install python3.9
-            sudo apt install python3-pip
-      - run: 
-          name: Install aws cli
-          command: sudo pip3 install awscli --force-reinstall --upgrade
+      # - run:
+      #     name: Install Python
+      #     command: |
+      #       sudo apt update
+      #       sudo apt install python3.9
+      #       sudo apt install python3-pip
+      # - run: 
+      #     name: Install aws cli
+      #     command: sudo pip3 install awscli --force-reinstall --upgrade
       - run:
           name: Get backend url
           command: |
@@ -273,7 +284,7 @@ jobs:
               --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
               --output text)
             export API_URL="http://${BACKEND_IP}:3030"
-            echo "API_URL = ${API_URL}"
+            echo "${API_URL}"
             echo API_URL="http://${BACKEND_IP}:3030" >> frontend/.env
             cat frontend/.env
             
@@ -284,7 +295,6 @@ jobs:
             cd frontend
             npm install
             npm run build
-            npm audit fix --force
             tar -czvf artifact-"${CIRCLE_WORKFLOW_ID:0:7}".tar.gz dist
             aws s3 cp dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive
       # Here's where you will add some code to rollback on failure
@@ -294,8 +304,7 @@ jobs:
                     
   deploy-backend:
     docker:
-      # Docker image here that supports Ansible
-      - image: cimg/node:14.18
+      - image: python:3.10.5-alpine3.16
     steps:
       # Checkout code from git
       - checkout
@@ -305,12 +314,7 @@ jobs:
       # attach workspace
       - attach_workspace:
           at: ~/tmp
-      - run:
-          name: Install Python
-          command: |
-            sudo apt update
-            sudo apt install python3.9
-            sudo apt install python3-pip
+      
       - run: 
           name: Install aws cli
           command: sudo pip3 install awscli --force-reinstall --upgrade
@@ -321,6 +325,16 @@ jobs:
       - run:
           name: Deploy backend
           command: |
+            cd backend
+            npm install --legacy-peer-deps
+            npm run build
+            rm -rf node_modules
+            cd ..
+            # Zip Backend Directory
+            tar -C backend -czvf artifact.tar.gz .
+            mkdir -m 755 .circleci/ansible/roles/deploy/files/
+            cp artifact.tar.gz  .circleci/ansible/roles/deploy/files/
+            cd .circleci/ansible
             ansible-playbook .circleci/ansible/deploy-backend.yml -i ~/tmp/project/.circleci/ansible/inventory.txt
       - run:
           name: Build file
