@@ -268,15 +268,7 @@ jobs:
             sudo yum install -y nodejs
       - attach_workspace:
           at: ~/tmp
-      # - run:
-      #     name: Install Python
-      #     command: |
-      #       sudo apt update
-      #       sudo apt install python3.9
-      #       sudo apt install python3-pip
-      # - run: 
-      #     name: Install aws cli
-      #     command: sudo pip3 install awscli --force-reinstall --upgrade
+
       - run:
           name: Get backend url
           command: |
@@ -347,21 +339,27 @@ jobs:
   smoke-test:
     docker:
       # Lightweight Docker image 
-      - image: alpine:latest
+      - image: python:3.10.5-alpine3.16
     steps:
       - checkout
+      - attach_workspace:
+          at: ~/tmp
       - run:
           name: Install dependencies
           command: |
             apk add --update curl
-      # - run:
-      #     name: Get backend url
-      #     command: |
-      #       API_URL=$(echo .circleci/backend_url.txt)
+            pip install --upgrade pip && pip install --upgrade awscli
+      
       - run:
           name: Backend smoke test.
           command: |
-            curl -s $API_URL/api/status
+            export $API_URL="$(cat ~tmp/project/.circleci/output/backend_url.txt)"
+            if curl "${API_URL}/api/status" | grep "ok"
+            then
+                return 0
+            else
+                return 1
+            fi
       - run:
           name: Frontend smoke test.
           command: |
