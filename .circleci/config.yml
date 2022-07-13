@@ -56,8 +56,6 @@ jobs:
           paths: [frontend/node_modules]
           key: frontend-build
             
-      
-
   build-backend:
     docker:
       - image: circleci/node:13.8.0
@@ -102,8 +100,7 @@ jobs:
             cd backend
             npm install
             npm run test
-            
-            
+        
   scan-frontend:
     docker:
       - image: circleci/node:13.8.0
@@ -367,9 +364,9 @@ jobs:
             export API_URL="$(cat backend_url.txt)"
             if curl "${API_URL}/api/status" | grep "ok"
             then
-                return 0
-            else
                 return 1
+            else
+                return 0
             fi
       - run:
           name: Frontend smoke test.
@@ -391,6 +388,7 @@ jobs:
       - image: amazon/aws-cli
     steps:
       # Checkout code from git
+      - checkout
       - run:
           name: Install dependencies
           command: |
